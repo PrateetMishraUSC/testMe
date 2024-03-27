@@ -1,0 +1,42 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://kit.fontawesome.com/f26a391ca3.js" crossorigin="anonymous"></script>
+
+<ngb-alert class="alert" *ngIf="noMatchFound" type="warning" [dismissible]="false">
+    Currently you don't have any stocks in your watchlist.
+</ngb-alert>
+
+<div class="container custom-container">
+    <h2 id="heading" class="my-3">My Watchlist</h2>
+    <div class="row" *ngIf="isCardVisible && stockdata && price">
+      <div class="col">
+        <div class="card custom-card">
+            <div class="card-header" style="border: none; background-color: transparent;">
+                <i class="fas fa-xs fa-times" style="float: left; cursor:pointer" (click)="clearCard()"></i>
+            </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col row1">
+                {{stockdata.ticker}}
+              </div>
+              <div class="col row1" [style.color]="price?.d < 0 || price?.dp < 0 ? 'red' : 'green'">
+                {{price?.c}}
+              </div>
+            </div>
+            <div class="row">
+                <div class="col row2">
+                    {{stockdata.name}}
+                </div>
+                <div class="col row2" [style.color]="price?.d < 0 || price?.dp < 0 ? 'red' : 'green'">
+                  {{price.d < 0 ? '▼' : '▲'}} {{price.d}} ({{price.dp | number:'1.2-2'}}%)
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+

@@ -1,0 +1,198 @@
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://kit.fontawesome.com/f26a391ca3.js" crossorigin="anonymous"></script>
+</head>
+
+<h2 id="ss-text">STOCK SEARCH</h2>
+
+<form class="example-form">
+  <input type="text"
+         placeholder="Enter stock ticker symbol"
+         [formControl]="control"
+         [matAutocomplete]="auto"
+         class="searchbar"
+         (keyup.enter)="onSearch()"
+         >
+         <mat-autocomplete #auto="matAutocomplete" class="my-autocomplete" [panelWidth]="250">
+    <ng-container>
+      <mat-option *ngFor="let symbol of filteredSymbols | async" [value]="splitStockName(symbol)">{{symbol}}</mat-option>
+    </ng-container>
+  </mat-autocomplete>
+  <mat-icon aria-hidden="false" class="searchbar-options" fontIcon="search" (click)="onSearch()"></mat-icon>
+  <mat-icon aria-hidden="false" class="searchbar-options" id="clear-button" fontIcon="clear" (click)="onClear()"></mat-icon>
+</form>
+
+<ngb-alert class="alert" *ngIf="noMatchFound" type="danger" [dismissible]="false">
+  No data found. Please enter a valid Ticker
+</ngb-alert>
+
+<ngb-alert class="alert" *ngIf="noInputEntered" type="danger">
+  Please enter a valid Ticker
+</ngb-alert>
+  
+<div *ngIf="stockData && stockPrice">
+  <div class="left-stock-data">
+    <span id="stockdata-ticker">{{stockData.ticker}}<span id="stockdata-star" [style.color]="starClicked ? 'yellow' : 'grey'" (click)="starClicked = !starClicked" style="font-size: 1rem;cursor:pointer">&#9734;</span>
+  </span>
+    <span id="stockdata-name">{{stockData.name}}</span>
+    <span id="stockdata-exchange">{{stockData.exchange}}</span>
+    <button id="stockdata-buy" (click)="openModal2(content)">Buy</button>
+    <ng-template #content let-modal>
+      <div class="modal-header">
+        <div style="display: flex; flex-direction: column;">
+          <h4 class="modal-title" id="modal-basic-title">{{stockData.ticker}}</h4>
+        </div>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column;">
+        <span id="modal-headline">Current Price: {{stockPrice.c}}</span>
+        <span id="modal-summary">Money in wallet: 9000</span>
+        <div>
+          <label for="quantity">Quantity:</label>
+          <input class="w-75" type="number" id="quantity" name="quantity" min="1" style="border-radius: 5px;margin-left:5px">
+      </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between align-items-center;">
+          <span>Total: 8923</span>
+          <button type="button" class="btn btn-success" (click)="modal.close('Save click')">Buy</button>
+      </div>
+    </ng-template>
+  </div>
+  <img class="logo" [src]="stockData.logo" alt="Company Logo">
+  <span id="market-status" [style.color]="isMarketOpen(stockPrice.t) ? 'green' : 'red'">Market is: {{ isMarketOpen(stockPrice.t) ? 'Open' : 'Closed on ' + transformTimestamp(stockPrice.t) }}</span>
+</div>
+
+
+<div class="page-container">
+  <div class="content-wrapper">
+    <div *ngIf="stockPrice">
+      <div class="right-stock-data">
+        <span id="stockprice-c" [style.color]="stockPrice.d < 0 || stockPrice.dp < 0 ? 'red' : 'green'">{{stockPrice.c}}</span>
+        <span id="stockprice-d" [style.color]="stockPrice.d < 0 ? 'red' : 'green'">
+          <span style="font-size: 0.8rem; vertical-align: middle;margin-right:5px;">{{stockPrice.d < 0 ? '▼' : '▲'}}</span>{{stockPrice.d}}
+          (<span id="stockprice-dp" [style.color]="stockPrice.dp < 0 ? 'red' : 'green'">{{stockPrice.dp | number:'1.2-2'}}%</span>)
+        </span>
+          <span id="stockprice-t">{{ transformTimestamp(stockPrice.t) }}</span>  
+        </div>
+    </div>
+
+    <div *ngIf="stockPrice && stockData && companyNews" class="all-tabs">
+      <mat-tab-group animationDuration="0ms">
+        <mat-tab label="Summary">
+          <div class="all-prices">
+            <span><b>High Price: </b>{{stockPrice.h}}</span>
+            <span><b>Low Price: </b>{{stockPrice.l}}</span>
+            <span><b>Open Price: </b>{{stockPrice.o}}</span>
+            <span><b>Prev. Close: </b>{{stockPrice.pc}}</span>
+          </div>
+          <div class="about-company">
+            <h6 id="about-company-heading"><u>About the company</u></h6>
+            <span>IPO Start Date: {{stockData.ipo}}</span>
+            <span>Industry: {{stockData.finnhubIndustry}}</span>
+            <span>Webpage: <a [href]="stockData.weburl" target="_blank">{{stockData.weburl}}</a></span>
+            <span>Company peers:</span> 
+            <span id="peers-list">
+              <a href="peer" *ngFor="let peer of peers">{{peer}},</a>,
+            </span>
+          </div>
+          <highcharts-chart 
+          [Highcharts]="Highcharts" 
+          [options]="chartOptions" 
+          style="width: 473px; height: 280px; position:absolute;top:0%;left:53%">
+        </highcharts-chart>
+        </mat-tab>
+        <mat-tab label="Top News">
+          <div class="card-container">
+            <div *ngFor="let newsItem of companyNews" class="card" (click)="open(content, newsItem)">
+              <ng-template #content let-modal>
+                <div class="modal-header">
+                  <div style="display: flex; flex-direction: column;">
+                    <h4 class="modal-title" id="modal-basic-title">{{currentNewsItem.source}}</h4>
+                    <span id="modal-date">{{currentNewsItem.datetime | date:'MMMM d, y'}}</span>
+                  </div>
+                  <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+                </div>
+                <div class="modal-body" style="display: flex; flex-direction: column;">
+                  <span id="modal-headline">{{currentNewsItem.headline}}</span>
+                  <span id="modal-summary">{{currentNewsItem.summary}}</span>
+                  <span id="modal-clickhere">For more details click <a href="{{currentNewsItem.url}}" target="_blank">here</a></span>
+                </div>
+                <div class="modal-footer">
+                  <div id="modal-share">
+                    <div style="display: flex;flex-direction:column;margin-left:10px">
+                      <span id="share-text">Share</span>
+                      <div>
+                        <a href="https://twitter.com/intent/tweet?text={{currentNewsItem.headline}}&url={{currentNewsItem.url}}" target="_blank">
+                          <i class="fa-brands fa-2x fa-x-twitter" style="margin-right: 10px;color:black"></i>
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{currentNewsItem.url}}" target="_blank">
+                          <i class="fab fa-2x fa-facebook-square" style="color: blue;"></i>
+                        </a>
+                      </div>
+                    </div>
+                 </div>
+                </div>
+              </ng-template>
+              <div class="card-content">
+                <img mat-card-avatar class="square-avatar" [src]="newsItem.image" alt="News image">
+                <div class="text-content">{{newsItem.headline}}</div>
+              </div>
+            </div>
+          </div>
+          
+        </mat-tab>
+        
+        <mat-tab label="Charts">
+          <highcharts-chart 
+          [Highcharts]="Highcharts" 
+          [oneToOne]="true"
+          [(update)]="updateFlag"
+          [options]="smaChartOptions" 
+          style="width: 70%; height: 300px; display: block;position:relative">
+          </highcharts-chart>
+        </mat-tab>
+        <mat-tab label="Insights">
+          <div class="sentiments-table" *ngIf="insiderSentiments">
+            <span>Insider Sentiments</span>
+            <table class="sentiments-table-style">
+              <tr>
+                <td class="td-heading">{{insiderSentiments.symbol}}</td>
+                <td class="td-heading">MSPR</td>
+                <td class="td-heading">Change</td>
+              </tr>
+              <tr>
+                <td class="td-heading">Total</td>
+                <td>{{totalSumMspr}}</td>
+                <td>{{totalSumChange}}</td>
+              </tr>
+              <tr>
+                <td class="td-heading">Positive</td>
+                <td>{{positiveSumMspr}}</td>
+                <td>{{positiveSumChange}}</td>
+              </tr>
+              <tr>
+                <td class="td-heading">Negative</td>
+                <td>{{negativeSumMspr}}</td>
+                <td>{{negativeSumChange}}</td>
+              </tr>
+            </table>
+          </div>
+          <highcharts-chart 
+          [Highcharts]="Highcharts" 
+          [options]="barChartOptions" 
+          style="width: 50%; height: 280px; display: block;position:relative">
+          </highcharts-chart>
+          <highcharts-chart 
+          [Highcharts]="Highcharts" 
+          [options]="splineChartOptions" 
+          style="width: 48%; height: 280px;position:absolute; top:37%;left:52%">
+          </highcharts-chart>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </div>
+</div>

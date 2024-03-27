@@ -1,0 +1,95 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://kit.fontawesome.com/f26a391ca3.js" crossorigin="anonymous"></script>
+
+<ngb-alert class="alert" *ngIf="noMatchFound" type="warning" [dismissible]="false">
+    Currently you don't have any stocks.
+</ngb-alert>
+
+<div class="container custom-container">
+    <h2 id="heading" class="my-3">My Portfolio</h2>
+    <div class="row" *ngIf="isCardVisible && price && stockdata">
+      <h3 id="heading-2"> Money in wallet: $25000 </h3>
+      <div class="col">
+        <div class="card custom-card">
+            <div class="card-header d-flex align-items-center">
+                <h5 id="big-head" class="mb-0 mr-2">{{stockdata.ticker}}</h5>
+                <h6 id="small-head">{{stockdata.name}}</h6>
+            </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col row2">
+                Quantity:
+              </div>
+              <div class="col row2">
+                140.52
+              </div>
+              <div class="col row2">
+                Change:
+              </div>
+              <div class="col row2">
+                140.52
+              </div>
+            </div>
+            <div class="row">
+                <div class="col row2">
+                    Avg. Cost / Share:
+                </div>
+                <div class="col row2">
+                    -2.25
+                </div>
+                <div class="col row2">
+                    Current Price:
+                </div>
+                <div class="col row2">
+                  {{price.c}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col row2">
+                    Total Cost:
+                </div>
+                <div class="col row2">
+                    -2.25
+                </div>
+                <div class="col row2">
+                    Market Value:
+                </div>
+                <div class="col row2">
+                    -2.25
+                </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="d-flex justify-content-start" *ngIf="price && stockdata">
+                <button id="buy-button" class="btn btn-primary mr-2" (click)="open(content, $event)">Buy</button>
+                <button class="btn btn-danger" (click)="open(content, $event)">Sell</button>
+                <ng-template #content let-modal>
+                    <div class="modal-header">
+                      <div style="display: flex; flex-direction: column;">
+                        <h4 class="modal-title" id="modal-basic-title">{{stockdata.ticker}}</h4>
+                      </div>
+                      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+                    </div>
+                    <div class="modal-body" style="display: flex; flex-direction: column;">
+                      <span id="modal-headline">Current Price: {{price.c}}</span>
+                      <span id="modal-summary">Money in wallet:</span>
+                      <div>
+                        <label for="quantity">Quantity:</label>
+                        <input class="w-75" type="number" id="quantity" name="quantity" min="1" style="border-radius: 5px;margin-left:5px">
+                    </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between align-items-center">
+                        <span>Total: 8923</span>
+                        <button type="button" class="btn btn-success" (click)="modal.close('Save click')">Sell</button>
+                    </div>
+                  </ng-template>
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
+</div>
